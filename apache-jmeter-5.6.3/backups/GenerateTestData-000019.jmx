@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan">
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group">
+        <intProp name="ThreadGroup.num_threads">1</intProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="GenerateTestData">
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="script">import java.io.File
+import java.io.FileWriter
+import java.io.PrintWriter
+import java.util.Random
+import java.nio.file.Files
+import java.nio.file.Paths
+
+def csvFilePath = &apos;C:/jmeter-runner/data&apos;+&apos;/&apos;+&quot;${codepath}&quot; // Change this to your desired path
+// Define the CSV file path
+
+// Create CSV file and write header if it doesn&apos;t exist
+def file = new File(csvFilePath)
+if (!file.exists()) {
+    file.withPrintWriter { writer -&gt;
+        writer.println(&quot;firstName,lastName,age,env&quot;) // Write header
+    }
+}
+
+// Define a method to generate random user data
+def generateRandomUser() {
+    def random = new Random()
+    def firstNames = [&quot;John&quot;, &quot;Jane&quot;, &quot;Alex&quot;, &quot;Emily&quot;, &quot;Michael&quot;, &quot;Sarah&quot;]
+    def lastNames = [&quot;Smith&quot;, &quot;Doe&quot;, &quot;Johnson&quot;, &quot;Williams&quot;, &quot;Brown&quot;, &quot;Jones&quot;]
+    def randomAge = random.nextInt(50) + 18 // Age between 18 and 67
+    def randomFirstName = firstNames[random.nextInt(firstNames.size())]
+    def randomLastName = lastNames[random.nextInt(lastNames.size())]
+    
+    return [
+        firstName: randomFirstName,
+        lastName: randomLastName,
+        age: randomAge
+    ]
+}
+
+// Generate a user and store it in variables
+def user = generateRandomUser()
+vars.put(&quot;firstName&quot;, user.firstName)
+vars.put(&quot;lastName&quot;, user.lastName)
+vars.put(&quot;age&quot;, user.age.toString())
+
+// Write the user data to the CSV file
+file.withPrintWriter { writer -&gt;
+    writer.println(&quot;${user.firstName},${user.lastName},${user.age} ,${env}&quot;) // Append data
+}
+// Read all lines from the CSV file
+def lines = Files.readAllLines(Paths.get(csvFilePath))
+
+// Log the contents of the CSV file
+log.info(&quot;Contents of CSV File:&quot;)
+lines.each { line -&gt;
+    log.info(line)
+}
+// Optional: Log the generated user data
+log.info(&quot;Generated User: ${user.firstName} ${user.lastName}, Age: ${user.age}&quot;)
+</stringProp>
+          <stringProp name="scriptLanguage">groovy</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="env" elementType="Argument">
+              <stringProp name="Argument.name">env</stringProp>
+              <stringProp name="Argument.value">${__P(env,dev)}</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="codepath" elementType="Argument">
+              <stringProp name="Argument.name">codepath</stringProp>
+              <stringProp name="Argument.value">${__P(output,testdata)}</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </Arguments>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JMeter Runner</title>
+</head>
+<body>
+    <h1>Run JMeter Test</h1>
+    <form id="jmeterForm">
+        <label for="scriptname">Script Name:</label>
+        <input type="text" id="scriptname" name="scriptname" required><br><br>
+
+        <label for="env">Environment:</label>
+        <input type="text" id="env" name="env" required><br><br>
+
+        <label for="tenant">Tenant:</label>
+        <input type="text" id="tenant" name="tenant" required><br><br>
+
+        <label for="tenantconfig">Tenant Config:</label>
+        <input type="text" id="tenantconfig" name="tenantconfig" required><br><br>
+
+        <label for="testtype">Test Type:</label>
+        <input type="text" id="testtype" name="testtype" required><br><br>
+
+        <button type="submit">Run Test</button>
+    </form>
+    <div id="result"></div>
+	
+	  <div id="result"></div>
+
+    <script>
+        document.getElementById('jmeterForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const params = {};
+            formData.forEach((value, key) => {
+                params[key] = value;
+            });
+
+            fetch('/run-test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(params),
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('result').innerHTML = data; // Display the HTML table
+            })
+            .catch(error => {
+                document.getElementById('result').innerText = `Error: ${error}`;
+            });
+        });
+    </script>
+	
+	
+</body>
+</html>
